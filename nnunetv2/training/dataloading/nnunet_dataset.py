@@ -14,6 +14,7 @@ from batchgenerators.utilities.file_and_folder_operations import join, load_pick
 from nnunetv2.configuration import default_num_processes
 from nnunetv2.training.dataloading.utils import unpack_dataset
 import math
+import time
 
 
 class nnUNetBaseDataset(ABC):
@@ -63,6 +64,7 @@ class nnUNetBaseDataset(ABC):
 
 class nnUNetDatasetNumpy(nnUNetBaseDataset):
     def load_case(self, identifier):
+    
         data_npy_file = join(self.source_folder, identifier + '.npy')
         if not isfile(data_npy_file):
             data = np.load(join(self.source_folder, identifier + '.npz'))['data']
@@ -148,7 +150,9 @@ class nnUNetDatasetBlosc2(nnUNetBaseDataset):
             seg_prev = None
 
         properties = load_pickle(join(self.source_folder, identifier + '.pkl'))
+
         return data, seg, seg_prev, properties
+
 
     @staticmethod
     def save_case(

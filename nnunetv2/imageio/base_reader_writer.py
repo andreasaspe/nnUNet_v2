@@ -17,7 +17,6 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Union, List
 import numpy as np
 
-
 class BaseReaderWriter(ABC):
     @staticmethod
     def _check_all_same(input_list):
