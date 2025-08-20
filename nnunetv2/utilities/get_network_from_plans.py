@@ -1,7 +1,7 @@
 import pydoc
 import warnings
 from typing import Union
-
+import pickle
 from nnunetv2.utilities.find_class_by_name import recursive_find_python_class
 from batchgenerators.utilities.file_and_folder_operations import join
 
@@ -36,7 +36,19 @@ def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import,
         num_classes=output_channels,
         **architecture_kwargs
     )
+    
+    info_dict = {
+        'type': type(network),
+        'arch_class_name': arch_class_name,
+        'input_channels': input_channels,
+        'num_classes': output_channels,
+        **architecture_kwargs
+    }
 
+    path = "/scratch/awias/data/Pancreas/info_dict.pkl"
+    with open(path, 'wb') as handle:
+        pickle.dump(info_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
     if hasattr(network, 'initialize') and allow_init:
         network.apply(network.initialize)
 

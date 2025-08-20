@@ -145,7 +145,8 @@ def run_training(dataset_name_or_id: Union[str, int],
                  only_run_validation: bool = False,
                  disable_checkpointing: bool = False,
                  val_with_best: bool = False,
-                 device: torch.device = torch.device('cuda')):
+                 device: torch.device = torch.device('cuda'),
+                 return_trainer: bool = False):
     if plans_identifier == 'nnUNetPlans':
         print("\n############################\n"
               "INFO: You are using the old nnU-Net default plans. We have updated our recommendations. "
@@ -196,6 +197,9 @@ def run_training(dataset_name_or_id: Union[str, int],
             nnunet_trainer.disable_checkpointing = disable_checkpointing
 
         assert not (continue_training and only_run_validation), f'Cannot set --c and --val flag at the same time. Dummy.'
+        
+        if return_trainer:
+            return nnunet_trainer
 
         maybe_load_checkpoint(nnunet_trainer, continue_training, only_run_validation, pretrained_weights)
 
@@ -267,6 +271,43 @@ def run_training_entry():
                  args.num_gpus, args.npz, args.c, args.val, args.disable_checkpointing, args.val_best,
                  device=device)
 
+def get_trainer(fold = 0):
+    import argparse
+    arg_dict = {
+        'dataset_name_or_id': 1,
+        'configuration': '3d_fullres' ,
+        'fold': fold,
+        'tr': 'nnUNetTrainerNoMirroring',
+        'p': 'nnUNetResEncUNetLPlans',
+        'pretrained_weights': None,
+        'num_gpus': 1,
+        'npz': "",
+        'c': "",
+        'val': "",
+        'disable_checkpointing': "",
+        'val_best': "",
+        'device': 'cuda',
+        'return_trainer': True
+    }
+    from argparse import Namespace
+    args = Namespace(**arg_dict)
+    
+    assert args.device in ['cpu', 'cuda', 'mps'], f'-device must be either cpu, mps or cuda. Other devices are not tested/supported. Got: {args.device}.'
+    if args.device == 'cpu':
+        # let's allow torch to use hella threads
+        torch.set_num_threads(multiprocessing.cpu_count())
+        device = torch.device('cpu')
+    elif args.device == 'cuda':
+        # multithreading in torch doesn't help nnU-Net if run on GPU
+        torch.set_num_threads(1)
+        torch.set_num_interop_threads(1)
+        device = torch.device('cuda')
+    else:
+        device = torch.device('mps')
+
+    return run_training(args.dataset_name_or_id, args.configuration, args.fold, args.tr, args.p, args.pretrained_weights,
+                 args.num_gpus, args.npz, args.c, args.val, args.disable_checkpointing, args.val_best,
+                 device=device, return_trainer=args.return_trainer)
 
 if __name__ == '__main__':
     os.environ['OMP_NUM_THREADS'] = '1'

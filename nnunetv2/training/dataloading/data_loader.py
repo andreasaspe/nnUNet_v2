@@ -32,8 +32,10 @@ class nnUNetDataLoader(DataLoader):
         If we get a 2D patch size, make it pseudo 3D and remember to remove the singleton dimension before
         returning the batch
         """
-        super().__init__(data, batch_size, 1, None, True,
+        super().__init__(data, 1, 1, None, True,
                          False, True, sampling_probabilities)
+        # super().__init__(data, batch_size, 1, None, True,
+        #                  False, True, sampling_probabilities)
 
         if len(patch_size) == 2:
             final_patch_size = (1, *patch_size)
