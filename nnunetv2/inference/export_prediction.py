@@ -10,6 +10,8 @@ from nnunetv2.training.dataloading.nnunet_dataset import nnUNetDatasetBlosc2
 from nnunetv2.utilities.label_handling.label_handling import LabelManager
 from nnunetv2.utilities.plans_handling.plans_handler import PlansManager, ConfigurationManager
 
+import time
+import os
 
 def convert_predicted_logits_to_segmentation_with_correct_shape(predicted_logits: Union[torch.Tensor, np.ndarray],
                                                                 plans_manager: PlansManager,
@@ -17,9 +19,19 @@ def convert_predicted_logits_to_segmentation_with_correct_shape(predicted_logits
                                                                 label_manager: LabelManager,
                                                                 properties_dict: dict,
                                                                 return_probabilities: bool = False,
-                                                                num_threads_torch: int = default_num_processes):
+                                                                num_threads_torch: int = default_num_processes, subject_name = None):
+    
     old_threads = torch.get_num_threads()
     torch.set_num_threads(num_threads_torch)
+    
+    
+    # print("Predicted logits before reshaping:")
+    # print(predicted_logits.shape)
+    # print("\n")
+    
+    # for i in range(10):
+    #     print(i)
+    #     time.sleep(1)
 
     # resample to original shape
     spacing_transposed = [properties_dict['spacing'][i] for i in plans_manager.transpose_forward]
@@ -31,6 +43,24 @@ def convert_predicted_logits_to_segmentation_with_correct_shape(predicted_logits
                                             properties_dict['shape_after_cropping_and_before_resampling'],
                                             current_spacing,
                                             [properties_dict['spacing'][i] for i in plans_manager.transpose_forward])
+    
+    # print("Predicted logits after reshaping:")
+    # print(predicted_logits.shape)
+    # print("\n")
+    
+    # for i in range(10):
+    #     print(i)
+    #     time.sleep(1)
+    
+    outputpath = "/scratch/awias/data/Pancreas/nnUNet_dataset/nnUNet_raw/Dataset001_Pancreas/imagesTs/predicted_logits_ts"
+        
+    subject_name_cleaned = subject_name.split('_')[0]
+    
+    # Save predicted logits for debugging or analysis
+    np.savez_compressed(os.path.join(outputpath, subject_name_cleaned+".npz"), logits=predicted_logits)
+    
+    print("Logits saved")
+
     # return value of resampling_fn_probabilities can be ndarray or Tensor but that does not matter because
     # apply_inference_nonlin will convert to torch
     if not return_probabilities:
@@ -75,7 +105,7 @@ def export_prediction_from_logits(predicted_array_or_file: Union[np.ndarray, tor
                                   configuration_manager: ConfigurationManager,
                                   plans_manager: PlansManager,
                                   dataset_json_dict_or_file: Union[dict, str], output_file_truncated: str,
-                                  save_probabilities: bool = False,
+                                  save_probabilities: bool = False, subject_name=None,
                                   num_threads_torch: int = default_num_processes):
     # if isinstance(predicted_array_or_file, str):
     #     tmp = deepcopy(predicted_array_or_file)
@@ -84,14 +114,14 @@ def export_prediction_from_logits(predicted_array_or_file: Union[np.ndarray, tor
     #     elif predicted_array_or_file.endswith('.npz'):
     #         predicted_array_or_file = np.load(predicted_array_or_file)['softmax']
     #     os.remove(tmp)
-
+    
     if isinstance(dataset_json_dict_or_file, str):
         dataset_json_dict_or_file = load_json(dataset_json_dict_or_file)
-
+        
     label_manager = plans_manager.get_label_manager(dataset_json_dict_or_file)
     ret = convert_predicted_logits_to_segmentation_with_correct_shape(
         predicted_array_or_file, plans_manager, configuration_manager, label_manager, properties_dict,
-        return_probabilities=save_probabilities, num_threads_torch=num_threads_torch
+        return_probabilities=save_probabilities, num_threads_torch=num_threads_torch, subject_name=subject_name
     )
     del predicted_array_or_file
 
@@ -134,6 +164,7 @@ def resample_and_save(predicted: Union[torch.Tensor, np.ndarray], target_shape: 
                                                                                 target_shape,
                                                                                 current_spacing,
                                                                                 target_spacing)
+    
 
     # create segmentation (argmax, regions, etc)
     label_manager = plans_manager.get_label_manager(dataset_json_dict_or_file)

@@ -366,6 +366,9 @@ class nnUNetPredictor(object):
                     os.remove(delfile)
 
                 ofile = preprocessed['ofile']
+                
+                subject_name = os.path.basename(ofile).split('.')[0]
+                
                 if ofile is not None:
                     print(f'\nPredicting {os.path.basename(ofile)}:')
                 else:
@@ -381,9 +384,13 @@ class nnUNetPredictor(object):
                 while not proceed:
                     sleep(0.1)
                     proceed = not check_workers_alive_and_busy(export_pool, worker_list, r, allowed_num_queued=2)
-
+                
                 # convert to numpy to prevent uncatchable memory alignment errors from multiprocessing serialization of torch tensors
                 prediction = self.predict_logits_from_preprocessed_data(data).cpu().detach().numpy()
+                
+                # print("Prediction shape: \n")
+                # print(prediction.shape)
+                # print("\n")
 
                 if ofile is not None:
                     print('sending off prediction to background worker for resampling and export')
@@ -391,7 +398,7 @@ class nnUNetPredictor(object):
                         export_pool.starmap_async(
                             export_prediction_from_logits,
                             ((prediction, properties, self.configuration_manager, self.plans_manager,
-                              self.dataset_json, ofile, save_probabilities),)
+                              self.dataset_json, ofile, save_probabilities, subject_name),)
                         )
                     )
                 else:
@@ -402,7 +409,7 @@ class nnUNetPredictor(object):
                                 (prediction, self.plans_manager,
                                  self.configuration_manager, self.label_manager,
                                  properties,
-                                 save_probabilities),)
+                                 save_probabilities, subject_name),)
                         )
                     )
                 if ofile is not None:
