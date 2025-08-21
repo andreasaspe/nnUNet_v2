@@ -52,13 +52,12 @@ def convert_predicted_logits_to_segmentation_with_correct_shape(predicted_logits
     #     print(i)
     #     time.sleep(1)
     
+    # Save logits
     outputpath = "/scratch/awias/data/Pancreas/nnUNet_dataset/nnUNet_raw/Dataset001_Pancreas/imagesTs/predicted_logits_ts"
-        
+    os.makedirs(outputpath, exist_ok=True)
     subject_name_cleaned = subject_name.split('_')[0]
-    
     # Save predicted logits for debugging or analysis
     np.savez_compressed(os.path.join(outputpath, subject_name_cleaned+".npz"), logits=predicted_logits)
-    
     print("Logits saved")
 
     # return value of resampling_fn_probabilities can be ndarray or Tensor but that does not matter because
