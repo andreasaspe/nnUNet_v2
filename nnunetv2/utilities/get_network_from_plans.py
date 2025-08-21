@@ -4,7 +4,7 @@ from typing import Union
 import pickle
 from nnunetv2.utilities.find_class_by_name import recursive_find_python_class
 from batchgenerators.utilities.file_and_folder_operations import join
-
+import sys
 
 def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import, input_channels, output_channels,
                            allow_init=True, deep_supervision: Union[bool, None] = None):
@@ -45,9 +45,14 @@ def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import,
         **architecture_kwargs
     }
 
-    path = "/scratch/awias/data/Pancreas/info_dict.pkl"
-    with open(path, 'wb') as handle:
-        pickle.dump(info_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    path = "/home/awias/data/nnUNet/nnUNet_raw/Dataset001_Verse20/info_dict.pkl"
+    try:
+        with open(path, 'wb') as handle:
+            pickle.dump(info_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    except: 
+        print(f"ERROR: Peter and I hardcoded this. We try to save the info_dict as a pickle. Please update the path to the correct dataset. Current path defined is: {path}")
+        print(f"You can correct it in this file: {__file__}")
+        sys.exit(1)
     
     if hasattr(network, 'initialize') and allow_init:
         network.apply(network.initialize)
@@ -56,6 +61,7 @@ def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import,
 
 if __name__ == "__main__":
     import torch
+
 
     model = get_network_from_plans(
         arch_class_name="dynamic_network_architectures.architectures.unet.ResidualEncoderUNet",
