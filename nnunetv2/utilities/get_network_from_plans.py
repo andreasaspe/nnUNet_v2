@@ -36,7 +36,7 @@ def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import,
         num_classes=output_channels,
         **architecture_kwargs
     )
-    
+
     info_dict = {
         'type': type(network),
         'arch_class_name': arch_class_name,
@@ -45,16 +45,17 @@ def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import,
         **architecture_kwargs
     }
 
-    path = "/scratch/awias/data/nnUNet/info_dict_verse.pkl"
+    # path = "/scratch/awias/data/nnUNet/info_dict_verse.pkl"
+    path = "/home/awias/data/nnUNet/info_dict_verse.pkl"
     # path = "/scratch/awias/data/Pancreas/info_dict.pkl"
     try:
         with open(path, 'wb') as handle:
             pickle.dump(info_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    except: 
+    except:
         print(f"ERROR: Peter and I hardcoded this. We try to save the info_dict as a pickle. Please update the path to the correct dataset. Current path defined is: {path}")
         print(f"You can correct it in this file: {__file__}")
         sys.exit(1)
-    
+
     if hasattr(network, 'initialize') and allow_init:
         network.apply(network.initialize)
 
