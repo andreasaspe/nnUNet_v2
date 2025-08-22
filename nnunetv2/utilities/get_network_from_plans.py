@@ -45,7 +45,8 @@ def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import,
         **architecture_kwargs
     }
 
-    path = "/home/awias/data/nnUNet/nnUNet_raw/Dataset001_Verse20/info_dict.pkl"
+    path = "/scratch/awias/data/nnUNet/info_dict_verse.pkl"
+    # path = "/scratch/awias/data/Pancreas/info_dict.pkl"
     try:
         with open(path, 'wb') as handle:
             pickle.dump(info_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
