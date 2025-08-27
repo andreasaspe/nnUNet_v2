@@ -197,7 +197,7 @@ class nnUNetTrainer(object):
                                "#######################################################################\n",
                                also_print_to_console=True, add_timestamp=False)
 
-    def initialize(self):
+    def initialize(self, dataset_name_or_id):
         if not self.was_initialized:
             ## DDP batch size and oversampling can differ between workers and needs adaptation
             # we need to change the batch size in DDP because we don't use any of those distributed samplers
@@ -212,7 +212,7 @@ class nnUNetTrainer(object):
                 self.configuration_manager.network_arch_init_kwargs_req_import,
                 self.num_input_channels,
                 self.label_manager.num_segmentation_heads,
-                self.enable_deep_supervision
+                self.enable_deep_supervision, dataset_name_or_id
             ).to(self.device)
             # compile network for free speedup
             if self._do_i_compile():
@@ -306,7 +306,8 @@ class nnUNetTrainer(object):
                                    arch_init_kwargs_req_import: Union[List[str], Tuple[str, ...]],
                                    num_input_channels: int,
                                    num_output_channels: int,
-                                   enable_deep_supervision: bool = True) -> nn.Module:
+                                   enable_deep_supervision: bool = True,
+                                   dataset_name_or_id: str = None) -> nn.Module:
         """
         This is where you build the architecture according to the plans. There is no obligation to use
         get_network_from_plans, this is just a utility we use for the nnU-Net default architectures. You can do what
@@ -333,7 +334,8 @@ class nnUNetTrainer(object):
             num_input_channels,
             num_output_channels,
             allow_init=True,
-            deep_supervision=enable_deep_supervision)
+            deep_supervision=enable_deep_supervision,
+            dataset_name_or_id=dataset_name_or_id)
 
     def _get_deep_supervision_scales(self):
         if self.enable_deep_supervision:
@@ -894,9 +896,9 @@ class nnUNetTrainer(object):
 
         mod.decoder.deep_supervision = enabled
 
-    def on_train_start(self):
+    def on_train_start(self, dataset_name_or_id):
         if not self.was_initialized:
-            self.initialize()
+            self.initialize(dataset_name_or_id)
 
         # dataloaders must be instantiated here (instead of __init__) because they need access to the training data
         # which may not be present  when doing inference
@@ -1404,8 +1406,8 @@ class nnUNetTrainer(object):
         self.set_deep_supervision_enabled(True)
         compute_gaussian.cache_clear()
 
-    def run_training(self):
-        self.on_train_start()
+    def run_training(self, dataset_name_or_id):
+        self.on_train_start(dataset_name_or_id)
 
         for epoch in range(self.current_epoch, self.num_epochs):
             self.on_epoch_start()

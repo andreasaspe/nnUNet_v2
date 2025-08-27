@@ -7,7 +7,7 @@ from batchgenerators.utilities.file_and_folder_operations import join
 import sys
 
 def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import, input_channels, output_channels,
-                           allow_init=True, deep_supervision: Union[bool, None] = None):
+                           allow_init=True, deep_supervision: Union[bool, None] = None, dataset_name_or_id: str = None):
     network_class = arch_class_name
     architecture_kwargs = dict(**arch_kwargs)
     for ri in arch_kwargs_req_import:
@@ -48,7 +48,8 @@ def get_network_from_plans(arch_class_name, arch_kwargs, arch_kwargs_req_import,
     # path = "/scratch/awias/data/nnUNet/info_dict_verse.pkl"
     # path = "/scratch/awias/data/Pancreas/info_dict.pkl"
     # path = "/home/awias/data/nnUNet/info_dict_verse.pkl"
-    path = "/scratch/awias/data/nnUNet/info_dict_TotalSegmentatorPancreas.pkl"
+    # path = "/scratch/awias/data/nnUNet/info_dict_TotalSegmentatorPancreas.pkl"
+    path = f"/scratch/awias/data/nnUNet/info_dict_{dataset_name_or_id}.pkl"
     try:
         with open(path, 'wb') as handle:
             pickle.dump(info_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
