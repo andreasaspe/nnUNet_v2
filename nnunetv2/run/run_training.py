@@ -68,7 +68,7 @@ def get_trainer_from_args(dataset_name_or_id: Union[int, str],
 
 
 def maybe_load_checkpoint(nnunet_trainer: nnUNetTrainer, continue_training: bool, validation_only: bool,
-                          pretrained_weights_file: str = None):
+                          pretrained_weights_file: str = None, dataset_name_or_id: Union[int, str] = None):
     if continue_training and pretrained_weights_file is not None:
         raise RuntimeError('Cannot both continue a training AND load pretrained weights. Pretrained weights can only '
                            'be used at the beginning of the training.')
@@ -95,7 +95,7 @@ def maybe_load_checkpoint(nnunet_trainer: nnUNetTrainer, continue_training: bool
         expected_checkpoint_file = None
 
     if expected_checkpoint_file is not None:
-        nnunet_trainer.load_checkpoint(expected_checkpoint_file)
+        nnunet_trainer.load_checkpoint(expected_checkpoint_file, dataset_name_or_id)
 
 
 def setup_ddp(rank, world_size):
@@ -119,7 +119,7 @@ def run_ddp(rank, dataset_name_or_id, configuration, fold, tr, p, disable_checkp
 
     assert not (c and val), f'Cannot set --c and --val flag at the same time. Dummy.'
 
-    maybe_load_checkpoint(nnunet_trainer, c, val, pretrained_weights)
+    maybe_load_checkpoint(nnunet_trainer, c, val, pretrained_weights, dataset_name_or_id)
 
     if torch.cuda.is_available():
         cudnn.deterministic = False

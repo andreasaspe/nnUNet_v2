@@ -1176,9 +1176,9 @@ class nnUNetTrainer(object):
             else:
                 self.print_to_log_file('No checkpoint written, checkpointing is disabled')
 
-    def load_checkpoint(self, filename_or_checkpoint: Union[dict, str]) -> None:
+    def load_checkpoint(self, filename_or_checkpoint: Union[dict, str], dataset_name_or_id: Union[int, str]) -> None:
         if not self.was_initialized:
-            self.initialize()
+            self.initialize(dataset_name_or_id)
 
         if isinstance(filename_or_checkpoint, str):
             checkpoint = torch.load(filename_or_checkpoint, map_location=self.device, weights_only=False)
