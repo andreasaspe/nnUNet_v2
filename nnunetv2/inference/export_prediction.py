@@ -53,12 +53,12 @@ def convert_predicted_logits_to_segmentation_with_correct_shape(predicted_logits
     #     time.sleep(1)
     
     # Save logits
-    outputpath = "/scratch/awias/data/Pancreas/nnUNet_dataset/nnUNet_raw/Dataset001_Pancreas/imagesTs/predicted_logits_ts"
-    os.makedirs(outputpath, exist_ok=True)
-    subject_name_cleaned = subject_name.split('_')[0]
-    # Save predicted logits for debugging or analysis
-    np.savez_compressed(os.path.join(outputpath, subject_name_cleaned+".npz"), logits=predicted_logits)
-    print("Logits saved")
+    # outputpath = "/scratch/awias/data/Pancreas/nnUNet_dataset/nnUNet_raw/Dataset001_Pancreas/imagesTs/predicted_logits_ts"
+    # os.makedirs(outputpath, exist_ok=True)
+    # subject_name_cleaned = subject_name.split('_')[0]
+    # # Save predicted logits for debugging or analysis
+    # np.savez_compressed(os.path.join(outputpath, subject_name_cleaned+".npz"), logits=predicted_logits)
+    # print("Logits saved")
 
     # return value of resampling_fn_probabilities can be ndarray or Tensor but that does not matter because
     # apply_inference_nonlin will convert to torch
@@ -118,6 +118,10 @@ def export_prediction_from_logits(predicted_array_or_file: Union[np.ndarray, tor
         dataset_json_dict_or_file = load_json(dataset_json_dict_or_file)
         
     label_manager = plans_manager.get_label_manager(dataset_json_dict_or_file)
+
+    if globals().get('do_not_use_softmax', False):
+        label_manager.inference_nonlin = lambda x: x
+
     ret = convert_predicted_logits_to_segmentation_with_correct_shape(
         predicted_array_or_file, plans_manager, configuration_manager, label_manager, properties_dict,
         return_probabilities=save_probabilities, num_threads_torch=num_threads_torch, subject_name=subject_name

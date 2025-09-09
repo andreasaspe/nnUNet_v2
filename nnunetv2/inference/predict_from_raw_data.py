@@ -489,11 +489,11 @@ class nnUNetPredictor(object):
 
         for params in self.list_of_parameters:
 
-            # messing with state dict names...
-            if not isinstance(self.network, OptimizedModule):
-                self.network.load_state_dict(params)
-            else:
-                self.network._orig_mod.load_state_dict(params)
+            # # messing with state dict names...
+            # if not isinstance(self.network, OptimizedModule):
+            #     self.network.load_state_dict(params)
+            # else:
+            #     self.network._orig_mod.load_state_dict(params)
 
             # why not leave prediction on device if perform_everything_on_device? Because this may cause the
             # second iteration to crash due to OOM. Grabbing that with try except cause way more bloated code than
