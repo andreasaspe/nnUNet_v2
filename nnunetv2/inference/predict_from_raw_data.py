@@ -35,6 +35,9 @@ from nnunetv2.utilities.label_handling.label_handling import determine_num_input
 from nnunetv2.utilities.plans_handling.plans_handler import PlansManager, ConfigurationManager
 from nnunetv2.utilities.utils import create_lists_from_splitted_dataset_folder
 
+# Add on (Andreas)
+from nnunetv2.inference.export_prediction import export_prediction_from_logits_variance, \
+    convert_predicted_logits_to_segmentation_with_correct_shape_variance
 
 class nnUNetPredictor(object):
     def __init__(self,
@@ -226,7 +229,7 @@ class nnUNetPredictor(object):
             output_folder = os.path.dirname(output_folder_or_list_of_truncated_output_files[0])
         else:
             output_folder = None
-
+            
         ########################
         # let's store the input arguments so that its clear what was used to generate the prediction
         if output_folder is not None:
@@ -391,27 +394,40 @@ class nnUNetPredictor(object):
                 # print("Prediction shape: \n")
                 # print(prediction.shape)
                 # print("\n")
+                
 
                 if ofile is not None:
-                    print('sending off prediction to background worker for resampling and export')
-                    r.append(
-                        export_pool.starmap_async(
-                            export_prediction_from_logits,
-                            ((prediction, properties, self.configuration_manager, self.plans_manager,
-                              self.dataset_json, ofile, save_probabilities, subject_name),)
+                    if os.environ['PREDICT_PIXEL_VARIANCE'] == '1':
+                        print('sending off prediction to background worker for resampling and export')
+                        r.append(
+                            export_pool.starmap_async(
+                                export_prediction_from_logits_variance,
+                                ((prediction, properties, self.configuration_manager, self.plans_manager,
+                                self.dataset_json, ofile, save_probabilities, subject_name),)
+                            )
                         )
-                    )
+                        print('sending off prediction to background worker for resampling and export')
+                    else:
+                        r.append(
+                            export_pool.starmap_async(
+                                export_prediction_from_logits,
+                                ((prediction, properties, self.configuration_manager, self.plans_manager,
+                                self.dataset_json, ofile, save_probabilities, subject_name),)
+                            )
+                        )
                 else:
                     print('sending off prediction to background worker for resampling')
                     r.append(
                         export_pool.starmap_async(
                             convert_predicted_logits_to_segmentation_with_correct_shape, (
                                 (prediction, self.plans_manager,
-                                 self.configuration_manager, self.label_manager,
-                                 properties,
-                                 save_probabilities, subject_name),)
+                                self.configuration_manager, self.label_manager,
+                                properties,
+                                save_probabilities, subject_name),)
                         )
                     )
+                    
+                    
                 if ofile is not None:
                     print(f'done with {os.path.basename(ofile)}')
                 else:
@@ -489,11 +505,11 @@ class nnUNetPredictor(object):
 
         for params in self.list_of_parameters:
 
-            # messing with state dict names...
-            if not isinstance(self.network, OptimizedModule):
-                self.network.load_state_dict(params)
-            else:
-                self.network._orig_mod.load_state_dict(params)
+            # # messing with state dict names...
+            # if not isinstance(self.network, OptimizedModule):
+            #     self.network.load_state_dict(params)
+            # else:
+            #     self.network._orig_mod.load_state_dict(params)
 
             # why not leave prediction on device if perform_everything_on_device? Because this may cause the
             # second iteration to crash due to OOM. Grabbing that with try except cause way more bloated code than

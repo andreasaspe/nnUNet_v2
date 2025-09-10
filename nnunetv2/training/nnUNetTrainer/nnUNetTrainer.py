@@ -156,6 +156,7 @@ class nnUNetTrainer(object):
         self.num_epochs = 1000
         self.current_epoch = 0
         self.enable_deep_supervision = True
+        self.return_dataloader = True
 
         ### Dealing with labels/regions
         self.label_manager = self.plans_manager.get_label_manager(dataset_json)
@@ -1257,9 +1258,6 @@ class nnUNetTrainer(object):
         if self.grad_scaler is not None:
             if checkpoint['grad_scaler_state'] is not None:
                 self.grad_scaler.load_state_dict(checkpoint['grad_scaler_state'])
-                
-        return checkpoint
-
 
     def perform_actual_validation(self, save_probabilities: bool = False):
         self.set_deep_supervision_enabled(False)
@@ -1410,6 +1408,16 @@ class nnUNetTrainer(object):
 
         self.set_deep_supervision_enabled(True)
         compute_gaussian.cache_clear()
+        
+        
+    def get_data_loader(self):
+        if not self.was_initialized:
+            self.initialize()
+
+        # dataloaders must be instantiated here (instead of __init__) because they need access to the training data
+        # which may not be present  when doing inference
+        dataloader_train, dataloader_val = self.get_dataloaders()
+        return dataloader_train, dataloader_val
 
     def run_training(self, dataset_name_or_id):
         self.on_train_start(dataset_name_or_id)
