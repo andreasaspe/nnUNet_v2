@@ -127,7 +127,7 @@ class nnUNetTrainer(object):
             if nnUNet_results is not None else None
             
             
-        #HAAAAAAAAAAAAAAAARDCODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #HARDCODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # self.output_folder = join(self.output_folder_base, f'fold_{fold}')
         self.output_folder = join(self.output_folder_base, f'fold_0_(4)')
         #######################################################################################
@@ -1462,8 +1462,8 @@ class nnUNetTrainer(object):
         dataloader_train, dataloader_val = self.get_dataloaders()
         return dataloader_train, dataloader_val
 
-    def run_training(self):
-        self.on_train_start()
+    def run_training(self, dataset_name_or_id):
+        self.on_train_start(dataset_name_or_id)
 
         for epoch in range(self.current_epoch, self.num_epochs):
             self.on_epoch_start()
