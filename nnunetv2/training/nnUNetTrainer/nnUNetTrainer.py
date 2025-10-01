@@ -128,8 +128,8 @@ class nnUNetTrainer(object):
             
             
         #HARDCODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # self.output_folder = join(self.output_folder_base, f'fold_{fold}')
-        self.output_folder = join(self.output_folder_base, f'fold_0_(4)')
+        self.odutput_folder = join(self.output_folder_base, f'fold_{fold}')
+        # self.output_folder = join(self.output_folder_base, f'fold_0_(1)')
         #######################################################################################
 
         self.preprocessed_dataset_folder = join(self.preprocessed_dataset_folder_base,
