@@ -127,7 +127,7 @@ class nnUNetTrainer(object):
             if nnUNet_results is not None else None
             
             
-        #HARDCODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #HARDCODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         self.odutput_folder = join(self.output_folder_base, f'fold_{fold}')
         # self.output_folder = join(self.output_folder_base, f'fold_0_(1)')
         #######################################################################################
