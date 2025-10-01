@@ -128,7 +128,7 @@ class nnUNetTrainer(object):
             
             
         #HARDCODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.odutput_folder = join(self.output_folder_base, f'fold_{fold}')
+        self.output_folder = join(self.output_folder_base, f'fold_{fold}')
         # self.output_folder = join(self.output_folder_base, f'fold_0_(1)')
         #######################################################################################
 
